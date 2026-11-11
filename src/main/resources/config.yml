@@ -1,0 +1,8 @@
+# LiveLens Configuration
+# 摄像机配置
+camera:
+  # 上帝视角高度 (距离玩家头顶的距离)
+  god-view:
+    height: 15.0
+  # 平滑移动速度 (0.0 - 1.0, 越大越丝滑但延迟越高)
+  smooth-speed: 0.1

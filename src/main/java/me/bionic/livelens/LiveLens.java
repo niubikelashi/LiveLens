@@ -1,5 +1,6 @@
 package me.bionic.livelens;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class LiveLens extends JavaPlugin {
@@ -8,9 +9,21 @@ public class LiveLens extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // 保存默认配置
+        saveDefaultConfig();
+        getLogger().info("LiveLens loaded. Config saved.");
+
         this.playerTracker = new PlayerTracker(this);
         this.cameraManager = new CameraManager(this, playerTracker);
-        getLogger().info("LiveLens has been enabled!");
+
+        // 注册命令 (用于测试切换视角)
+        getCommand("livelens").setExecutor(new CommandHandler(this));
+
+        // 启动后台任务：每 1 tick 更新摄像机和玩家活跃度
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            playerTracker.updateActivity();
+            cameraManager.update();
+        }, 0L, 1L);
     }
 
     @Override
