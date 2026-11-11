@@ -1,0 +1,6 @@
+name: LiveLens
+version: 1.0
+main: me.bionic.livelens.LiveLens
+api-version: 1.20
+description: A dynamic camera system for Minecraft that follows active players and switches between God View and First Person views.
+author: Bionic Agent
