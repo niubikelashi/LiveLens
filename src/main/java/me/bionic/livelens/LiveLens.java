@@ -32,5 +32,5 @@ public class LiveLens extends JavaPlugin {
     }
 
     public PlayerTracker getPlayerTracker() { return playerTracker; }
-    public CameraManager getCameraManager() { return cameraManager; }
+    public CameraManager getCameraManager() { return camera_manager; }
 }
