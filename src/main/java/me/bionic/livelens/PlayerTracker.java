@@ -73,8 +73,9 @@ public class PlayerTracker {
      * 获取当前最活跃的玩家。
      * 如果所有玩家分数都很低，则返回任意一个在线玩家（确保至少有一个目标）。
      */
+    @SuppressWarnings("unchecked")
     public Player getMostActivePlayer() {
-        Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
+        Collection<Player> onlinePlayers = (Collection<Player>) (Collection<? extends Player>) Bukkit.getOnlinePlayers();
         if (onlinePlayers.isEmpty()) return null;
         
         // 使用 Iterator 避免创建新集合的开销
