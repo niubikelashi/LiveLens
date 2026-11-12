@@ -19,22 +19,18 @@ public class CommandHandler implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players in-game.");
-            return true;
-        }
-
-        Player player = (Player) sender;
-
-        if (!player.hasPermission("livelens.use")) {
-            player.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
+        // 检查权限（控制台和 OP 玩家自动通过）
+        if (!sender.hasPermission("livelens.use")) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
             return true;
         }
 
         CameraManager cameraManager = plugin.getCameraManager();
+        boolean isPlayer = sender instanceof Player;
 
         if (args.length == 0) {
-            sendHelpMessage(player);
+            // Show help message
+            sendHelpMessage(sender);
             return true;
         }
 
@@ -42,78 +38,88 @@ public class CommandHandler implements CommandExecutor {
 
         switch (subCommand) {
             case "god":
-                cameraManager.setMode(CameraManager.CameraMode.GOD_VIEW);
-                player.sendMessage(ChatColor.GREEN + "Camera switched to God View! (Third-person follow mode)");
+                cameraManager.setMode(CameraManager.CameraMode.GOD_VIEW, isPlayer ? (Player) sender : null);
+                if (isPlayer) {
+                    ((Player) sender).sendMessage(ChatColor.GREEN + "Camera switched to God View! (Third-person follow mode)");
+                }
                 break;
 
             case "first":
-                cameraManager.setMode(CameraManager.CameraMode.FIRST_PERSON);
-                player.sendMessage(ChatColor.GREEN + "Camera switched to First Person Mode! (Follow player's eyes with inventory display)");
+                cameraManager.setMode(CameraManager.CameraMode.FIRST_PERSON, isPlayer ? (Player) sender : null);
+                if (isPlayer) {
+                    ((Player) sender).sendMessage(ChatColor.GREEN + "Camera switched to First Person Mode! (Follow player's eyes with inventory display)");
+                }
                 break;
 
             case "orbit":
-                cameraManager.setMode(CameraManager.CameraMode.ORBIT_VIEW);
-                player.sendMessage(ChatColor.GREEN + "Camera switched to Orbit View! (Rotating around the player)");
+                cameraManager.setMode(CameraManager.CameraMode.ORBIT_VIEW, isPlayer ? (Player) sender : null);
+                if (isPlayer) {
+                    ((Player) sender).sendMessage(ChatColor.GREEN + "Camera switched to Orbit View! (Rotating around the player)");
+                }
                 break;
 
             case "status":
-                player.sendMessage(ChatColor.YELLOW + "=== LiveLens Status ===");
-                player.sendMessage(ChatColor.WHITE + "Current mode: " + ChatColor.GRAY + cameraManager.getCurrentMode().name());
+                sender.sendMessage(ChatColor.YELLOW + "=== LiveLens Status ===");
+                sender.sendMessage(ChatColor.WHITE + "Current mode: " + ChatColor.GRAY + cameraManager.getCurrentMode().name());
+                
                 Player focusPlayer = plugin.getPlayerTracker().getMostActivePlayer();
                 if (focusPlayer != null) {
-                    player.sendMessage(ChatColor.WHITE + "Tracking player: " + ChatColor.AQUA + focusPlayer.getName());
+                    sender.sendMessage(ChatColor.WHITE + "Tracking player: " + ChatColor.AQUA + focusPlayer.getName());
                 } else {
-                    player.sendMessage(ChatColor.WHITE + "Tracking player: " + ChatColor.GRAY + "None");
+                    sender.sendMessage(ChatColor.WHITE + "Tracking player: " + ChatColor.GRAY + "None");
                 }
+                
+                // Show current camera location if available
                 var camLoc = cameraManager.getCameraLocation();
                 if (camLoc != null) {
-                    player.sendMessage(ChatColor.WHITE + "Camera position: " + 
+                    sender.sendMessage(ChatColor.WHITE + "Camera position: " + 
                         ChatColor.GOLD + String.format("%.1f, %.1f, %.1f", 
                             camLoc.getX(), camLoc.getY(), camLoc.getZ()));
                 } else {
-                    player.sendMessage(ChatColor.WHITE + "Camera position: " + ChatColor.GRAY + "Not initialized yet");
+                    sender.sendMessage(ChatColor.WHITE + "Camera position: " + ChatColor.GRAY + "Not initialized yet");
                 }
-                player.sendMessage(ChatColor.WHITE + "Online players: " + ChatColor.GREEN + Bukkit.getOnlinePlayers().size());
+                
+                // Show online players count
+                sender.sendMessage(ChatColor.WHITE + "Online players: " + ChatColor.GREEN + Bukkit.getOnlinePlayers().size());
                 break;
 
             case "switch":
+                // Toggle between modes (God <-> First -> Orbit)
                 CameraManager.CameraMode currentMode = cameraManager.getCurrentMode();
+                CameraManager.CameraMode nextMode;
                 if (currentMode == CameraManager.CameraMode.GOD_VIEW) {
-                    cameraManager.setMode(CameraManager.CameraMode.FIRST_PERSON);
-                    player.sendMessage(ChatColor.GREEN + "Camera switched to First Person Mode!");
+                    nextMode = CameraManager.CameraMode.FIRST_PERSON;
                 } else if (currentMode == CameraManager.CameraMode.FIRST_PERSON) {
-                    cameraManager.setMode(CameraManager.CameraMode.GOD_VIEW);
-                    player.sendMessage(ChatColor.GREEN + "Camera switched to God View!");
+                    nextMode = CameraManager.CameraMode.ORBIT_VIEW;
                 } else {
-                    if (currentMode == CameraManager.CameraMode.ORBIT_VIEW) {
-                        cameraManager.setMode(CameraManager.CameraMode.GOD_VIEW);
-                        player.sendMessage(ChatColor.GREEN + "Camera switched to God View!");
-                    } else {
-                        cameraManager.setMode(CameraManager.CameraMode.ORBIT_VIEW);
-                        player.sendMessage(ChatColor.GREEN + "Camera switched to Orbit View!");
-                    }
+                    // Orbit -> God View (cycle through all 3)
+                    nextMode = CameraManager.CameraMode.GOD_VIEW;
+                }
+                cameraManager.setMode(nextMode, isPlayer ? (Player) sender : null);
+                if (isPlayer) {
+                    ((Player) sender).sendMessage(ChatColor.GREEN + "Camera switched to " + nextMode.name() + "!");
                 }
                 break;
 
             case "help":
-                sendHelpMessage(player);
+                sendHelpMessage(sender);
                 break;
 
             default:
-                player.sendMessage(ChatColor.RED + "Unknown subcommand. Use /livelens help for usage.");
+                sender.sendMessage(ChatColor.RED + "Unknown subcommand. Use /livelens help for usage.");
                 break;
         }
 
         return true;
     }
 
-    private void sendHelpMessage(Player player) {
-        player.sendMessage(ChatColor.YELLOW + "=== LiveLens Commands ===");
-        player.sendMessage(ChatColor.WHITE + "/livelens god" + ChatColor.GRAY + " - Switch to God View (third-person camera)");
-        player.sendMessage(ChatColor.WHITE + "/livelens first" + ChatColor.GRAY + " - Switch to First Person Mode (follow eyes with inventory display)");
-        player.sendMessage(ChatColor.WHITE + "/livelens orbit" + ChatColor.GRAY + " - Switch to Orbit View (rotating around the player)");
-        player.sendMessage(ChatColor.WHITE + "/livelens switch" + ChatColor.GRAY + " - Toggle between camera modes");
-        player.sendMessage(ChatColor.WHITE + "/livelens status" + ChatColor.GRAY + " - Show current camera and tracking info");
-        player.sendMessage(ChatColor.WHITE + "/livelens help" + ChatColor.GRAY + " - Show this help message");
+    private void sendHelpMessage(CommandSender sender) {
+        sender.sendMessage(ChatColor.YELLOW + "=== LiveLens Commands ===");
+        sender.sendMessage(ChatColor.WHITE + "/livelens god" + ChatColor.GRAY + " - Switch to God View (third-person camera) [perm: livelens.use]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens first" + ChatColor.GRAY + " - Switch to First Person Mode (follow eyes with inventory display) [perm: livelens.use]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens orbit" + ChatColor.GRAY + " - Switch to Orbit View (rotating around the player) [perm: livelens.use]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens switch" + ChatColor.GRAY + " - Cycle through camera modes [perm: livelens.use]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens status" + ChatColor.GRAY + " - Show current camera and tracking info [perm: livelens.use]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens help" + ChatColor.GRAY + " - Show this help message [perm: livelens.use]");
     }
 }
