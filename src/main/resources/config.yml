@@ -1,25 +1,35 @@
-# LiveLens Configuration
-# -------------------------
+# ============================================================
+#  LiveLens — Minecraft 游戏直播插件配置
+#  兼容 Paper / Spigot 1.20.1+
+# ============================================================
 
-# General Settings
-tracking:
-  interval-ticks: 1        # Update frequency (1 tick = 0.05s)
-  logging:
-    enable: true            # Enable console logging
-    log-camera-position: false
-
-# Camera Modes Settings
+# --- 摄像机系统 ---
 camera:
-  smooth-speed: 0.1         # How fast the camera moves to target (0.0 - 1.0)
-
+  # 上帝视角高度（从玩家头顶算起的垂直距离）
   god-view:
-    height: 15.0            # Height above the player
-    back-offset: 8.0        # Distance behind the player
+    height: 15.0
+    
+  # 上帝视角后偏移距离（背后多少格）
+  back-offset: 8.0
+  
+  # 平滑移动速度 (0.0 ~ 1.0，越大越快)
+  smooth-speed: 0.1
 
-  first-person:
-    eye-height: 1.6         # Standard eye height (usually 1.6 for humans)
-
+  # 轨道视角设置
   orbit-view:
-    radius: 10.0            # Distance from the focus player
-    height: 5.0             # Height above the focus player
-    rotation-speed: 0.02    # How fast it rotates around the player (radians per tick)
+    radius: 10.0            # 旋转半径（距离玩家的水平距离）
+    height: 5.0             # 高度（从玩家头顶算起的垂直距离）
+    rotation-speed: 0.02    # 旋转速度（弧度/tick，越大转得越快）
+
+# --- 自动追踪系统 ---
+tracking:
+  # 每 tick（20次/秒）执行一次活动检测
+  interval-ticks: 1
+  
+  # 分数衰减因子 (越小衰减越快, 新玩家更容易被选中)
+  decay-factor: 0.95
+
+# --- 日志 ---
+logging:
+  enable: true
+  log-camera-position: false  # 每 tick 输出摄像机坐标（调试用）
