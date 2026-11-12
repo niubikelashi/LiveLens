@@ -28,7 +28,8 @@ public class LiveLens extends JavaPlugin {
             playerTracker.updateActivity();
             cameraManager.update();
 
-            if (getConfig().getBoolean("logging.enable") && getConfig().getBoolean("logging.log-camera-position")) {
+            if ((getConfig().getBoolean("tracking.logging.enable", false) || getConfig().getBoolean("logging.enable", false))
+                    && getConfig().getBoolean("logging.log-camera-position", false)) {
                 Location loc = cameraManager.getCameraLocation();
                 if (loc != null) {
                     getLogger().info("Camera at: " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ());
