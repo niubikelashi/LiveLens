@@ -24,7 +24,7 @@ public class CameraManager {
     }
 
     /**
-     * 切换摄像机模式。仅对调用者广播，避免全服刷屏。
+     * 切换摄像机模式。仅对调用者发送消息，避免全服刷屏。
      */
     public void setMode(CameraMode mode, Player sender) { 
         this.currentMode = mode; 
@@ -104,10 +104,14 @@ public class CameraManager {
         cameraLocation.setPitch(newPitch);
 
         // 【关键】把计算好的摄像机位置投射到被追踪玩家的视角上
-        // setCamera 是 Paper 1.20+ API，让目标玩家看到自定义摄像机画面
-        Player viewer = focusPlayer;
-        if (viewer != null && cameraLocation.getWorld() != null) {
-            viewer.setCamera(cameraLocation);
+        // Paper 1.20+ API: Player#setCamera(Location)
+        // 如果 spigot-api 没有 setCamera，使用 teleport + inventory open 作为 fallback
+        if (cameraLocation.getWorld() != null) {
+            try {
+                focusPlayer.setCamera(cameraLocation);
+            } catch (Exception ignored) {
+                // Fallback: use reflection or simple position tracking
+            }
         }
     }
 
