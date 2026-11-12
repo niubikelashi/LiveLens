@@ -1,35 +1,28 @@
 # ============================================================
-#  LiveLens — Minecraft 游戏直播插件配置
-#  兼容 Paper / Spigot 1.20.1+
+#  LiveLens — Minecraft \u00b7 Server Plugin Configuration
+#  Compatible with Paper / Spigot 1.20.1+
 # ============================================================
 
-# --- 摄像机系统 ---
+# --- Camera System ---
 camera:
-  # 上帝视角高度（从玩家头顶算起的垂直距离）
+  # God View height (vertical distance above player)
   god-view:
     height: 15.0
-    
-  # 上帝视角后偏移距离（背后多少格）
-  back-offset: 8.0
-  
-  # 平滑移动速度 (0.0 ~ 1.0，越大越快)
-  smooth-speed: 0.1
+    back-offset: 8.0  
+  smooth-speed: 0.1   # Smooth movement speed (0.0 ~ 1.0, higher = faster)
 
-  # 轨道视角设置
+  # Orbit View settings
   orbit-view:
-    radius: 10.0            # 旋转半径（距离玩家的水平距离）
-    height: 5.0             # 高度（从玩家头顶算起的垂直距离）
-    rotation-speed: 0.02    # 旋转速度（弧度/tick，越大转得越快）
+    radius: 10.0            # Rotation radius (horizontal distance from player)
+    height: 5.0             # Height offset (vertical above player head)
+    rotation-speed: 0.02    # Rotation speed (radians/tick, higher = faster)
 
-# --- 自动追踪系统 ---
+# --- Auto-Tracking System ---
 tracking:
-  # 每 tick（20次/秒）执行一次活动检测
-  interval-ticks: 1
-  
-  # 分数衰减因子 (越小衰减越快, 新玩家更容易被选中)
-  decay-factor: 0.95
+  interval-ticks: 1       # Activity detection interval (ticks; 20 ticks/sec = 1 tick)
+  decay-factor: 0.95      # Score decay factor (lower = faster decay)
 
-# --- 日志 ---
+# --- Logging ---
 logging:
   enable: true
-  log-camera-position: false  # 每 tick 输出摄像机坐标（调试用）
+  log-camera-position: false  # Log camera coordinates every tick (for debugging)

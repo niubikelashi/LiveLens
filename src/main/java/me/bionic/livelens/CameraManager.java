@@ -29,7 +29,7 @@ public class CameraManager {
     public void setMode(CameraMode mode, Player sender) { 
         this.currentMode = mode; 
         if (sender != null) {
-            sender.sendMessage("§aCamera switched to: " + mode.name());
+            sender.sendMessage("\u00a7aCamera switched to: " + mode.name());
         }
     }
 
