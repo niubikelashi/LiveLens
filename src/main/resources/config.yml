@@ -1,8 +1,25 @@
 # LiveLens Configuration
-# 摄像机配置
+# -------------------------
+
+# General Settings
+tracking:
+  interval-ticks: 1        # Update frequency (1 tick = 0.05s)
+  logging:
+    enable: true            # Enable console logging
+    log-camera-position: false
+
+# Camera Modes Settings
 camera:
-  # 上帝视角高度 (距离玩家头顶的距离)
+  smooth-speed: 0.1         # How fast the camera moves to target (0.0 - 1.0)
+
   god-view:
-    height: 15.0
-  # 平滑移动速度 (0.0 - 1.0, 越大越丝滑但延迟越高)
-  smooth-speed: 0.1
+    height: 15.0            # Height above the player
+    back-offset: 8.0        # Distance behind the player
+
+  first-person:
+    eye-height: 1.6         # Standard eye height (usually 1.6 for humans)
+
+  orbit-view:
+    radius: 10.0            # Distance from the focus player
+    height: 5.0             # Height above the focus player
+    rotation-speed: 0.02    # How fast it rotates around the player (radians per tick)
