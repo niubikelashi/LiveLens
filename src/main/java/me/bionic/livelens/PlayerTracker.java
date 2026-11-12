@@ -39,7 +39,7 @@ public class PlayerTracker {
     }
 
     public Player getMostActivePlayer() {
-        Collection<Player> onlinePlayers = Bukkit.getOnlinePlayers();
+        var onlinePlayers = Bukkit.getOnlinePlayers();
         if (onlinePlayers.isEmpty()) return null;
         
         Player bestPlayer = null;
