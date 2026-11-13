@@ -24,9 +24,55 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -B
         
-      - name: Upload artifact
-        if: success()
+      - name: Upload artifact to Actions Artifacts
+        if: success() && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: LiveLens-plugin
           path: target/LiveLens-*.jar
+  
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download artifact from previous job
+        uses: actions/download-artifact@v4
+        with:
+          name: LiveLens-plugin
+      
+      - name: Set version from git tag count
+        id: version
+        run: |
+          # Count tags to generate a simple version number
+          TAG_COUNT=$(git tag | wc -l)
+          VERSION="v1.0.$TAG_COUNT"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "::debug::Generated version: $VERSION"
+      
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: LiveLens ${{ steps.version.outputs.version }}
+          body: |
+            ## What's new
+            
+            - Auto-built from commit ${{ github.sha }}
+            - Fixed compilation errors with reflection-based Paper API compatibility
+            - Support Paper/Leaves 1.20+ / Spigot 1.20+
+            - Three camera modes: God View, First Person, Orbit
+            - Console command support
+            
+            ## Install
+            
+            Download `LiveLens-*.jar` and put it in your server's `plugins/` folder.
+          files: |
+            LiveLens-*.jar
+          draft: false
+          prerelease: false
