@@ -13,6 +13,32 @@ public class PlayerTracker {
     // Threshold below which a player is considered "inactive"
     private static final double INACTIVE_THRESHOLD = 0.1;
 
+    // Cache the isInsideBlock method for performance
+    private static java.lang.reflect.Method IS_INSIDE_BLOCK_METHOD;
+    
+    static {
+        try {
+            IS_INSIDE_BLOCK_METHOD = org.bukkit.entity.Player.class.getMethod("isInsideBlock");
+        } catch (NoSuchMethodException e) {
+            // Paper 1.21+ may not have this method — will fallback to false
+        }
+    }
+
+    /**
+     * Check if player is inside a block using reflection for compatibility.
+     * Returns false if the method doesn't exist (e.g., Spigot, older Paper).
+     */
+    private static boolean isPlayerInsideBlock(Player player) {
+        if (IS_INSIDE_BLOCK_METHOD != null) {
+            try {
+                return (boolean) IS_INSIDE_BLOCK_METHOD.invoke(player);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     public PlayerTracker(LiveLens plugin) { this.plugin = plugin; }
 
     /**
@@ -46,7 +72,8 @@ public class PlayerTracker {
             }
             
             // Jumping contribution — when on ground=false and not flying, indicates jump/climb
-            else if (!player.isOnGround() && !player.isInsideBlock()) {
+            // NOT on ground AND (NOT inside block OR method unavailable) — jump/climb detection
+            else if (!player.isOnGround() && !isPlayerInsideBlock(player)) {
                 scoreAddition += 0.3;
             }
             
