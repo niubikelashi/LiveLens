@@ -35,7 +35,7 @@ public class FFmpegEncoder {
         String url = rtmpUrl != null ? rtmpUrl : "rtmp://localhost/live/stream";
         recorder = new FFmpegFrameRecorder(url, width, height);
         recorder.setVideoCodec(org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_H264);
-        recorder.setPixelFormat(org.bytedeco.javacv.FFmpegFrameRecorder.PIX_FMT_YUV420P);
+        recorder.setPixelFormat(9);
         recorder.setFrameRate(fps);
         recorder.setVideoOption("preset", "ultrafast");
         recorder.setVideoOption("tune", "zerolatency");
@@ -55,7 +55,9 @@ public class FFmpegEncoder {
         if (tickCounter % tickInterval != 0) return;
 
         try {
-            Frame rawFrame = new Frame(width, height);
+            Frame rawFrame = new Frame();
+            rawFrame.imageWidth = width;
+            rawFrame.imageHeight = height;
             rawFrame.image = new byte[][]{frameData};
             rawFrame.imageWidth = width;
             rawFrame.imageHeight = height;
