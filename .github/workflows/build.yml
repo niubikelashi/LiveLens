@@ -63,4 +63,4 @@ jobs:
           tag: v1.0.${{ steps.count.outputs.tag_count }}
           name: LiveLens v1.0.${{ steps.count.outputs.tag_count }}
           generateReleaseNotes: true
-          artifacts: "LiveLens-*.jar"
+          artifacts: "LiveLens-plugin/*.jar"
