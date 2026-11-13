@@ -1,6 +1,7 @@
 package me.bionic.livelens;
 
 import me.bionic.livelens.commands.CommandHandler;
+import me.bionic.livelens.stream.StreamManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,6 +10,7 @@ public class LiveLens extends JavaPlugin {
 
     private CameraManager cameraManager;
     private PlayerTracker playerTracker;
+    private StreamManager streamManager;
 
     @Override
     public void onEnable() {
@@ -18,6 +20,9 @@ public class LiveLens extends JavaPlugin {
         // Initialize systems
         this.playerTracker = new PlayerTracker(this);
         this.cameraManager = new CameraManager(this, playerTracker);
+        
+        // Initialize livestream manager (RTMP push to Bilibili/Douyin)
+        this.streamManager = new StreamManager(this);
 
         // Register commands
         CommandHandler commandHandler = new CommandHandler(this);
@@ -27,6 +32,7 @@ public class LiveLens extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             playerTracker.updateActivity();
             cameraManager.update();
+            streamManager.onTick();
 
             if ((getConfig().getBoolean("tracking.logging.enable", false) || getConfig().getBoolean("logging.enable", false))
                     && getConfig().getBoolean("logging.log-camera-position", false)) {
@@ -42,6 +48,9 @@ public class LiveLens extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Clean up livestream sessions
+        if (streamManager != null) streamManager.shutdown();
+        
         getLogger().info("LiveLens has been disabled. Camera stopped.");
     }
 
@@ -51,5 +60,10 @@ public class LiveLens extends JavaPlugin {
 
     public CameraManager getCameraManager() {
         return cameraManager;
+    }
+
+    /** 获取直播推流管理器 */
+    public StreamManager getStreamManager() {
+        return streamManager;
     }
 }
