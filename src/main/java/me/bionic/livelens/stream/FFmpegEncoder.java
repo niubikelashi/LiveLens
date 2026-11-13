@@ -58,7 +58,8 @@ public class FFmpegEncoder {
             Frame rawFrame = new Frame();
             rawFrame.imageWidth = width;
             rawFrame.imageHeight = height;
-            rawFrame.image = new byte[][]{frameData};
+            java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(frameData);
+            rawFrame.image = new java.nio.Buffer[]{buf};
             rawFrame.imageWidth = width;
             rawFrame.imageHeight = height;
             recorder.record(rawFrame);
