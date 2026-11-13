@@ -12,20 +12,28 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Paper API supports 1.20+ and is backward compatible with Spigot -->
+        <!-- Paper API supports 1.20+ and is compatible with Leaves (Paper fork) -->
         <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
     </properties>
 
     <repositories>
-        <!-- PaperMC repository for paper-api (supports both Paper & Spigot servers) -->
+        <!-- PaperMC public repo — contains paper-api AND all transitive dependencies -->
         <repository>
             <id>papermc-repo</id>
-            <url>https://repo.papermc.io/repository/maven-snapshots/</url>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+        <!-- Maven Central as fallback for transitive deps -->
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
         </repository>
     </repositories>
 
     <dependencies>
-        <!-- paper-api includes all Spigot API + Paper-specific features (setCamera, isInsideBlock, etc.) -->
+        <!-- paper-api includes all Spigot API + Paper features (setCamera, isInsideBlock) -->
+        <!-- Leaves servers use the same Paper API, so this plugin works on Paper AND Leaves -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
@@ -47,20 +55,6 @@
                     <source>17</source>
                     <target>17</target>
                 </configuration>
-            </plugin>
-            <!-- Build fat jar with dependencies (optional, if you want a standalone jar) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
         
