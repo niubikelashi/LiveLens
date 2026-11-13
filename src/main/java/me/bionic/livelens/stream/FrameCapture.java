@@ -84,9 +84,9 @@ public class FrameCapture {
             case "GRASS_BLOCK": return new byte[]{76, 175, 80, (byte)255};
             case "DIRT": return new byte[]{139, 69, 19, (byte)255};
             case "STONE": return new byte[]{128, 128, 128, (byte)255};
-            case "SAND": return new byte[]{244, 223, 106, (byte)255};
-            case "WATER": return new byte[]{33, 150, 243, 80};
-            case "GLASS": return new byte[]{200, 200, 200, 40};
+            case "SAND": return new byte[]{(byte)244, (byte)223, (byte)106, (byte)255};
+            case "WATER": return new byte[]{33, (byte)150, (byte)243, (byte)80};
+            case "GLASS": return new byte[]{(byte)200, (byte)200, (byte)200, (byte)40};
             default: return new byte[]{128, 128, 128, (byte)255};
         }
     }
