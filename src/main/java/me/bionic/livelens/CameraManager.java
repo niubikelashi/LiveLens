@@ -14,9 +14,9 @@ public class CameraManager {
     private CameraMode currentMode = CameraMode.GOD_VIEW;
     private Player focusPlayer = null;
 
-    // 平滑移动相关变量
+    // Smooth movement related variables
     private Location cameraLocation;
-    private double orbitAngle = 0.0; // 用于轨道视角旋转的角度
+    private double orbitAngle = 0.0; // Angle for orbit view rotation
 
     public CameraManager(LiveLens plugin, PlayerTracker playerTracker) {
         this.plugin = plugin; 
@@ -24,12 +24,12 @@ public class CameraManager {
     }
 
     /**
-     * 切换摄像机模式。仅对调用者发送消息，避免全服刷屏。
+     * Switch camera mode. Only broadcast to the caller to avoid server-wide spam.
      */
     public void setMode(CameraMode mode, Player sender) { 
         this.currentMode = mode; 
         if (sender != null) {
-            sender.sendMessage("\u00a7aCamera switched to: " + mode.name());
+            sender.sendMessage("§aCamera switched to: " + mode.name());
         }
     }
 
@@ -41,7 +41,7 @@ public class CameraManager {
         focusPlayer = playerTracker.getMostActivePlayer();
         if (focusPlayer == null) return;
 
-        // 从配置中获取参数
+        // Get parameters from config
         double smoothSpeed = plugin.getConfig().getDouble("camera.smooth-speed", 0.1);
         double orbitRadius = plugin.getConfig().getDouble("camera.orbit-view.radius", 10.0);
         float orbitHeightOffset = (float) plugin.getConfig().getDouble("camera.orbit-view.height", 5.0);
@@ -56,15 +56,15 @@ public class CameraManager {
             Vector offset = new Vector(0, godViewHeight, -backOffset); 
             targetLoc = loc.add(offset.rotateAroundY(Math.toRadians(-180 + loc.getYaw())));
         } else if (currentMode == CameraMode.FIRST_PERSON) {
-            // 直接使用 getEyeLocation()，返回的就是眼睛位置（含 Y）
+            // Use getEyeLocation() directly — returns the eye position (including Y)
             targetLoc = focusPlayer.getEyeLocation().clone();
         } else if (currentMode == CameraMode.ORBIT_VIEW) {
             double rotationSpeed = plugin.getConfig().getDouble("camera.orbit-view.rotation-speed", 0.02);
 
-            // 更新旋转角度
+            // Update rotation angle
             orbitAngle += rotationSpeed;
 
-            // 计算轨道位置 (基于三角函数)，以玩家为中心，高度在玩家头顶上方
+            // Calculate orbital position (using trigonometry), centered on player, height above head
             Location loc = focusPlayer.getLocation();
             double x = Math.cos(orbitAngle) * orbitRadius;
             double z = Math.sin(orbitAngle) * orbitRadius;
@@ -76,15 +76,16 @@ public class CameraManager {
                 loc.getYaw(), 
                 loc.getPitch());
         } else {
+            // Fallback to player's location
             targetLoc = focusPlayer.getLocation().clone();
         }
 
-        // 首次调用时初始化 cameraLocation
+        // Initialize cameraLocation on first call
         if (cameraLocation == null) {
             cameraLocation = targetLoc.clone();
         }
 
-        // 平滑移动逻辑 (Lerp)
+        // Smooth movement logic (Lerp)
         double newX = lerp(cameraLocation.getX(), targetLoc.getX(), smoothSpeed);
         double newY = lerp(cameraLocation.getY(), targetLoc.getY(), smoothSpeed);
         double newZ = lerp(cameraLocation.getZ(), targetLoc.getZ(), smoothSpeed);
@@ -93,35 +94,36 @@ public class CameraManager {
         cameraLocation.setY(newY);
         cameraLocation.setZ(newZ);
 
-        // 平滑旋转 (Yaw/Pitch) — pitch 不做 360° 翻转，只钳制范围
+        // Smooth rotation (Yaw/Pitch) — pitch doesn't flip at 360°, only clamped to range
         float newYaw = lerpAngle(cameraLocation.getYaw(), targetLoc.getYaw());
-        float newPitch = lerp(cameraLocation.getPitch(), targetLoc.getPitch(), smoothSpeed);
-        // pitch 限制在 [-90, 90]，避免翻转
+        float newPitch = (float) lerp(cameraLocation.getPitch(), targetLoc.getPitch(), smoothSpeed);
+        // Clamp pitch to [-90, 90] to avoid flipping
         if (newPitch > 90.0f) newPitch = 90.0f;
         if (newPitch < -90.0f) newPitch = -90.0f;
         
         cameraLocation.setYaw(newYaw);
         cameraLocation.setPitch(newPitch);
 
-        // 【关键】把计算好的摄像机位置投射到被追踪玩家的视角上
-        // Paper 1.20+ API: Player#setCamera(Location)
-        // 如果 spigot-api 没有 setCamera，使用 teleport + inventory open 作为 fallback
-        if (cameraLocation.getWorld() != null) {
+        // 【关键】Project the calculated camera position to the tracked player's view
+        // setCamera is Paper API — lets the target player see custom camera view
+        Player viewer = focusPlayer;
+        if (viewer != null && cameraLocation.getWorld() != null) {
             try {
-                focusPlayer.setCamera(cameraLocation);
-            } catch (Exception ignored) {
-                // Fallback: use reflection or simple position tracking
+                viewer.setCamera(cameraLocation);
+            } catch (NoSuchMethodError | NoClassDefFoundError e) {
+                // setCamera not available on this server version — fallback to player's eye location
+                viewer.setEyeOffset(new org.bukkit.util.Vector(0, 0, 0));
             }
         }
     }
 
     /**
-     * 角度插值：使用最短路径（±180° 内），因子固定为 smoothSpeed。
+     * Angle interpolation: uses shortest path (±180°), fixed factor as smoothSpeed.
      */
     private float lerpAngle(float start, float end) {
         double smoothSpeed = plugin.getConfig().getDouble("camera.smooth-speed", 0.1);
         
-        // 计算最短角差 (-180 ~ +180)
+        // Calculate shortest angle difference (-180 ~ +180)
         float diff = end - start;
         while (diff > 180.0f) diff -= 360.0f;
         while (diff < -180.0f) diff += 360.0f;

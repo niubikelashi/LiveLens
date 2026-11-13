@@ -1,13 +1,17 @@
 name: LiveLens
-version: 1.0
+version: ${project.version}
 main: me.bionic.livelens.LiveLens
 api-version: 1.20
+description: A dynamic camera system for Minecraft that follows active players and switches between God View, First Person, and Orbit views.
 author: niubikelashi
-description: Minecraft camera tracking plugin with smooth follow and orbit views.
+
 commands:
   livelens:
-    description: Main command for LiveLens camera system
-    usage: /livelens <god|first|orbit|switch|status|help>
+    description: Main command for LiveLens plugin
+    usage: "/<command> [god|first|switch|status|help]"
+    permission: livelens.use
+    permission-message: You don't have permission to use this command!
+
 permissions:
   livelens.use:
     description: Allows using LiveLens commands
