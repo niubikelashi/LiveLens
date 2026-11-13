@@ -40,39 +40,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Download artifact from previous job
-        uses: actions/download-artifact@v4
-        with:
-          name: LiveLens-plugin
-      
-      - name: Set version from git tag count
-        id: version
+      - name: Count existing releases for versioning  
+        id: count
         run: |
-          # Count tags to generate a simple version number
-          TAG_COUNT=$(git tag | wc -l)
-          VERSION="v1.0.$TAG_COUNT"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "::debug::Generated version: $VERSION"
+          TAG_COUNT=$(gh release list --limit 1000 2>/dev/null | wc -l)
+          echo "tag_count=$TAG_COUNT" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
       
-      - name: Create GitHub Release
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+      
+      - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: LiveLens ${{ steps.version.outputs.version }}
-          body: |
-            ## What's new
-            
-            - Auto-built from commit ${{ github.sha }}
-            - Fixed compilation errors with reflection-based Paper API compatibility
-            - Support Paper/Leaves 1.20+ / Spigot 1.20+
-            - Three camera modes: God View, First Person, Orbit
-            - Console command support
-            
-            ## Install
-            
-            Download `LiveLens-*.jar` and put it in your server's `plugins/` folder.
-          files: |
-            LiveLens-*.jar
-          draft: false
-          prerelease: false
+          tag: v1.0.${{ steps.count.outputs.tag_count }}
+          name: LiveLens v1.0.${{ steps.count.outputs.tag_count }}
+          generateReleaseNotes: true
+          artifacts: "LiveLens-*.jar"
