@@ -78,6 +78,20 @@ public class CommandHandler implements CommandExecutor {
                 } else {
                     sender.sendMessage(ChatColor.WHITE + "Camera position: " + ChatColor.GRAY + "Not initialized yet");
                 }
+
+                // Show livestream status
+                if (isPlayer) {
+                    Player player = (Player) sender;
+                    me.bionic.livelens.stream.LiveSession session = plugin.getStreamManager().getSession(player);
+                    if (session != null) {
+                        sender.sendMessage(ChatColor.WHITE + "Live stream: " + ChatColor.GREEN + "ON");
+                        sender.sendMessage(ChatColor.WHITE + "  Provider: " + session.getProvider().getDisplayName());
+                        sender.sendMessage(ChatColor.WHITE + "  Resolution: " + session.getWidth() + "x" + session.getHeight() + "@" + session.getFps() + "fps");
+                        sender.sendMessage(ChatColor.WHITE + "  Uptime: " + String.format("%.0f seconds", session.getUptimeSeconds()));
+                    } else {
+                        sender.sendMessage(ChatColor.WHITE + "Live stream: " + ChatColor.RED + "OFF");
+                    }
+                }
                 
                 // Show online players count
                 sender.sendMessage(ChatColor.WHITE + "Online players: " + ChatColor.GREEN + Bukkit.getOnlinePlayers().size());
@@ -101,6 +115,11 @@ public class CommandHandler implements CommandExecutor {
                 }
                 break;
 
+            case "live":
+                // Livestream subcommands: start, stop, status
+                handleLiveCommand(sender, args.length > 1 ? args[1].toLowerCase() : "");
+                break;
+
             case "help":
                 sendHelpMessage(sender);
                 break;
@@ -113,6 +132,46 @@ public class CommandHandler implements CommandExecutor {
         return true;
     }
 
+    /** 处理直播子命令 */
+    private void handleLiveCommand(CommandSender sender, String action) {
+        if (!sender.hasPermission("livelens.stream.start")) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to start a livestream!");
+            return;
+        }
+
+        boolean isPlayer = sender instanceof Player;
+        StreamManager streamMgr = plugin.getStreamManager();
+
+        switch (action) {
+            case "start":
+                if (!isPlayer) {
+                    sender.sendMessage(ChatColor.RED + "Only players can start a livestream.");
+                    return;
+                }
+                Player player = (Player) sender;
+                // 检查是否已经有追踪目标（直播需要 CameraManager 初始化）
+                if (plugin.getPlayerTracker().getMostActivePlayer() == null) {
+                    player.sendMessage(ChatColor.RED + "No target player found. Ensure at least one player is online.");
+                    return;
+                }
+                streamMgr.startLive(player);
+                break;
+
+            case "stop":
+                if (!isPlayer) {
+                    sender.sendMessage(ChatColor.RED + "Only players can stop their livestream.");
+                    return;
+                }
+                streamMgr.stopLive((Player) sender);
+                break;
+
+            default:
+                // 如果 live 后面没有参数，显示直播帮助
+                sendLivestreamHelp(sender);
+                break;
+        }
+    }
+
     private void sendHelpMessage(CommandSender sender) {
         sender.sendMessage(ChatColor.YELLOW + "=== LiveLens Commands ===");
         sender.sendMessage(ChatColor.WHITE + "/livelens god" + ChatColor.GRAY + " - Switch to God View (third-person camera) [perm: livelens.use]");
@@ -120,6 +179,14 @@ public class CommandHandler implements CommandExecutor {
         sender.sendMessage(ChatColor.WHITE + "/livelens orbit" + ChatColor.GRAY + " - Switch to Orbit View (rotating around the player) [perm: livelens.use]");
         sender.sendMessage(ChatColor.WHITE + "/livelens switch" + ChatColor.GRAY + " - Cycle through camera modes [perm: livelens.use]");
         sender.sendMessage(ChatColor.WHITE + "/livelens status" + ChatColor.GRAY + " - Show current camera and tracking info [perm: livelens.use]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens live" + ChatColor.GRAY + " - Livestream subcommands (start/stop/status)");
         sender.sendMessage(ChatColor.WHITE + "/livelens help" + ChatColor.GRAY + " - Show this help message [perm: livelens.use]");
+    }
+
+    private void sendLivestreamHelp(CommandSender sender) {
+        sender.sendMessage(ChatColor.YELLOW + "=== LiveLens Livestream Commands ===");
+        sender.sendMessage(ChatColor.WHITE + "/livelens live start" + ChatColor.GRAY + " - Start streaming to Bilibili/Douyin [perm: livelens.stream.start]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens live stop" + ChatColor.GRAY + " - Stop current livestream [perm: livelens.stream.start]");
+        sender.sendMessage(ChatColor.WHITE + "/livelens status" + ChatColor.GRAY + " - Check stream status");
     }
 }
