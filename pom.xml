@@ -51,6 +51,14 @@
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
             <version>${javacv.version}</version>
+            <type>pom</type>
+        </dependency>
+        <!-- Explicit compile-scope dep so shade bundles FFmpeg natives -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>6.0-1.5.9</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
