@@ -9,6 +9,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import me.bionic.livelens.stream.StreamManager;
+
 public class CommandHandler implements CommandExecutor {
 
     private final LiveLens plugin;
