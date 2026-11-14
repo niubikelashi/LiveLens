@@ -1,7 +1,9 @@
-﻿name: Build Plugins
+name: Build LiveLens
 
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
 
 permissions:
@@ -15,24 +17,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Set up JDK 21 (for LiveLens)
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
       
-      - name: Build all modules with Maven
+      - name: Build with Maven
         run: mvn clean package -B
         
-      - name: Upload artifacts to Actions Artifacts
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         if: success() && github.ref == 'refs/heads/main'
         with:
-          name: plugin-jars
-          path: |
-            LiveLens/target/*.jar
-            CreativeBox/target/*.jar
+          name: LiveLens-jar
+          path: LiveLens/target/LiveLens-*.jar
 
   release:
     needs: build
@@ -43,7 +43,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Count existing releases for versioning  
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: LiveLens-jar
+          path: artifacts
+        
+      - name: Count existing releases
         id: count
         run: |
           TAG_COUNT=$(gh release list --limit 1000 2>/dev/null | wc -l)
@@ -51,19 +57,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: plugin-jars
-          path: artifacts
-      
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.count.outputs.tag_count }}
-          name: Plugin Release ${{ steps.count.outputs.tag_count }}
-          files: |
-            artifacts/LiveLens-*.jar
-            artifacts/CreativeBox-*.jar
-
+          tag_name: v${{ steps.count.outputs.tag_count + 1 }}
+          name: LiveLens v${{ steps.count.outputs.tag_count + 1 }}
+          files: artifacts/LiveLens-*.jar
