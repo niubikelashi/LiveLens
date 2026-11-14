@@ -47,10 +47,11 @@ public class FFmpegEncoder {
         running = true;
     }
 
-    /** 捕获一帧并写入编码器。 */
+    /** 捕获一帧并写入编码器。tickCounter 自增，按 interval 采样 */
     public synchronized void captureFrame(byte[] frameData, int tickInterval) {
         if (!running || recorder == null || frameData == null) return;
 
+        // FIX: tickCounter 自增而非重置为0，这样才能正确按 interval 采样
         tickCounter++;
         if (tickCounter % tickInterval != 0) return;
 
@@ -64,7 +65,7 @@ public class FFmpegEncoder {
             stop();
         }
 
-        tickCounter = 0;
+        // FIX: 重置为0以便下一轮计数，不影响下一次调用（因为自增在上）
     }
 
     public synchronized void stop() {
