@@ -1,4 +1,4 @@
-﻿package com.bionic.creativebox;
+package com.bionic.creativebox;
 
 import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
