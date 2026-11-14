@@ -1,0 +1,56 @@
+﻿world:
+  name: "sandbox"
+  type: FLAT
+  seed: 0
+  generate-structures: false
+  auto-build-platform: true
+
+spawn:
+  x: 0.5
+  y: 65.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0
+
+gamerules:
+  do-daylight-cycle: false
+  do-weather-cycle: false
+  do-mob-spawning: false
+  mob-griefing: false
+  keep-inventory: true
+  pvp: false
+
+isolation:
+  inventory: true
+  ender-chest: true
+  experience: true
+  potion-effects: true
+  health-and-food: true
+  game-mode: true
+  flight: true
+
+world-border:
+  enabled: false
+  diameter: 500
+
+reset:
+  enabled: false
+  time: "04:00"
+
+messages:
+  prefix: "&8[&b沙盒&8] "
+  enter: "&a已进入创意沙盒世界"
+  exit: "&e已返回原世界"
+  no-permission: "&c你没有权限使用此功能"
+  cooldown: "&c请稍后再试"
+  reset-kick: "&e沙盒世界正在重置，已把你送回原世界"
+  respawn: "&a已在沙盒出生点复活"
+  reload: "&a配置已重载"
+  setspawn-done: "&a沙盒出生点已设为你当前位置"
+  already-in: "&c你已经身在创意沙盒中了"
+  not-in: "&c你现在不在创意沙盒中"
+  player-not-found: "&c玩家不存在"
+
+void-protection:
+  enabled: true
+  threshold: 10
