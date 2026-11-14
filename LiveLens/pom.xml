@@ -13,7 +13,8 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
+        <!-- Paper 1.20.1+ — compatible with Paper and Leaves (Paper fork) -->
+        <paper.version>1.20.1-R0.1-SNAPSHOT</paper.version>
         <javacv.version>1.5.9</javacv.version>
     </properties>
 
@@ -41,8 +42,25 @@
     </dependencies>
 
     <build>
+        <!-- Use artifactId (not project.name which may differ) -->
         <finalName>${project.artifactId}-${project.version}</finalName>
+        
+        <!-- Resource filtering: expand ${project.version} in plugin.yml -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes><include>**/*.yml</include></includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes><exclude>**/*.yml</exclude></excludes>
+            </resource>
+        </resources>
+        
         <plugins>
+            <!-- Shade javacv-platform dependencies into the jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -60,17 +78,5 @@
                 </executions>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes><include>**/*.yml</include></includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes><exclude>**/*.yml</exclude></excludes>
-            </resource>
-        </resources>
     </build>
 </project>
