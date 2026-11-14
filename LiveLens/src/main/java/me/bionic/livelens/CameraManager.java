@@ -1,173 +1,353 @@
 package me.bionic.livelens;
 
+
+
 import org.bukkit.Bukkit;
+
 import org.bukkit.Location;
+
 import org.bukkit.entity.Player;
+
 import org.bukkit.util.Vector;
 
+
+
 public class CameraManager {
+
     private final LiveLens plugin;
+
     private final PlayerTracker playerTracker;
+
+
 
     public enum CameraMode { GOD_VIEW, FIRST_PERSON, ORBIT_VIEW }
 
+
+
     private CameraMode currentMode = CameraMode.GOD_VIEW;
+
     private Player focusPlayer = null;
 
+
+
     // 平滑移动相关变量
+
     private Location cameraLocation;
+
     private double orbitAngle = 0.0; // 用于轨道视角旋转的角度
 
+
+
     public CameraManager(LiveLens plugin, PlayerTracker playerTracker) {
+
         this.plugin = plugin; 
+
         this.playerTracker = playerTracker;
+
     }
 
+
+
     /**
+
      * 切换摄像机模式。仅对调用者广播，避免全服刷屏。
+
      */
+
     public void setMode(CameraMode mode, Player sender) { 
+
         this.currentMode = mode; 
+
         if (sender != null) {
+
             sender.sendMessage("§aCamera switched to: " + mode.name());
+
         }
+
     }
+
+
 
     private double lerp(double start, double end, double factor) {
+
         return start + (end - start) * Math.min(Math.max(factor, 0.0), 1.0);
+
     }
+
+
 
     public void update() {
+
         focusPlayer = playerTracker.getMostActivePlayer();
+
         if (focusPlayer == null) return;
 
+
+
         // 从配置中获取参数
+
         double smoothSpeed = plugin.getConfig().getDouble("camera.smooth-speed", 0.1);
+
         double orbitRadius = plugin.getConfig().getDouble("camera.orbit-view.radius", 10.0);
+
         float orbitHeightOffset = (float) plugin.getConfig().getDouble("camera.orbit-view.height", 5.0);
 
+
+
         Location targetLoc;
+
         
+
         if (currentMode == CameraMode.GOD_VIEW) {
+
             double godViewHeight = plugin.getConfig().getDouble("camera.god-view.height", 15.0);
+
             double backOffset = plugin.getConfig().getDouble("camera.god-view.back-offset", 8.0);
+
             
+
             Location loc = focusPlayer.getLocation();
+
             Vector offset = new Vector(0, godViewHeight, -backOffset); 
+
             targetLoc = loc.add(offset.rotateAroundY(Math.toRadians(-180 + loc.getYaw())));
+
         } else if (currentMode == CameraMode.FIRST_PERSON) {
-            // 直接使用 getEyeLocation()，返回的就是眼睛位置（含 Y）
+
+            // FIX: 直接使用 getEyeLocation()，返回的就是眼睛位置（含 Y）
+
             targetLoc = focusPlayer.getEyeLocation().clone();
+
         } else if (currentMode == CameraMode.ORBIT_VIEW) {
+
             double rotationSpeed = plugin.getConfig().getDouble("camera.orbit-view.rotation-speed", 0.02);
 
+
+
             // 更新旋转角度
+
             orbitAngle += rotationSpeed;
 
+
+
             // 计算轨道位置 (基于三角函数)，以玩家为中心，高度在玩家头顶上方
+
             Location loc = focusPlayer.getLocation();
+
             double x = Math.cos(orbitAngle) * orbitRadius;
+
             double z = Math.sin(orbitAngle) * orbitRadius;
+
             
+
             targetLoc = new Location(loc.getWorld(), 
+
                 loc.getX() + x, 
+
                 loc.getY() + orbitHeightOffset, 
+
                 loc.getZ() + z,
+
                 loc.getYaw(), 
+
                 loc.getPitch());
+
         } else {
+
             targetLoc = focusPlayer.getLocation().clone();
+
         }
+
+
 
         // 首次调用时初始化 cameraLocation
+
         if (cameraLocation == null) {
+
             cameraLocation = targetLoc.clone();
+
         }
+
+        
+
+        // FIX: ensure target world matches — prevents NPE in applyCamera
+
+        if (targetLoc.getWorld() != cameraLocation.getWorld()) {
+
+            cameraLocation.setWorld(targetLoc.getWorld());
+
+        }
+
+
 
         // 平滑移动逻辑 (Lerp)
+
         double newX = lerp(cameraLocation.getX(), targetLoc.getX(), smoothSpeed);
+
         double newY = lerp(cameraLocation.getY(), targetLoc.getY(), smoothSpeed);
+
         double newZ = lerp(cameraLocation.getZ(), targetLoc.getZ(), smoothSpeed);
+
         
+
         cameraLocation.setX(newX);
+
         cameraLocation.setY(newY);
+
         cameraLocation.setZ(newZ);
 
+
+
         // Smooth rotation (Yaw/Pitch) — pitch doesn't flip at 360°, only clamped to range
+
         float newYaw = lerpAngle(cameraLocation.getYaw(), targetLoc.getYaw());
+
         float newPitch = (float) lerp(cameraLocation.getPitch(), targetLoc.getPitch(), smoothSpeed);
+
         // Clamp pitch to [-90, 90] to avoid flipping
+
         if (newPitch > 90.0f) newPitch = 90.0f;
+
         if (newPitch < -90.0f) newPitch = -90.0f;
+
         
+
         cameraLocation.setYaw(newYaw);
+
         cameraLocation.setPitch(newPitch);
 
+
+
         // 【关键】将计算好的摄像机位置投射到被追踪玩家的视角上
-        // setCamera is Paper API — use reflection for compatibility across versions/servers
+
         Player viewer = focusPlayer;
+
         if (viewer != null && cameraLocation.getWorld() != null) {
+
             applyCamera(viewer, cameraLocation);
+
         }
+
     }
+
+
 
     // Cached reflection methods for Paper-specific Player methods (may not exist in all server versions)
+
     private static java.lang.reflect.Method SET_CAMERA_METHOD;
+
     private static java.lang.reflect.Method SET_EYE_OFFSET_METHOD;
+
     
+
     static {
+
         try {
+
             SET_CAMERA_METHOD = org.bukkit.entity.Player.class.getMethod("setCamera", org.bukkit.Location.class);
+
         } catch (NoSuchMethodException e) {
+
             // Paper 1.20.x or Spigot may not have setCamera
+
         }
+
         try {
+
             SET_EYE_OFFSET_METHOD = org.bukkit.entity.Player.class.getMethod("setEyeOffset", org.bukkit.util.Vector.class);
+
         } catch (NoSuchMethodException e) {
+
             // Paper 1.20.x or Spigot may not have setEyeOffset
+
         }
+
     }
 
+
+
     /**
+
      * Apply custom camera location to a player using reflection for cross-version compatibility.
+
      * Works on Paper/Leaves with setCamera(), falls back gracefully on older servers.
+
      */
+
     private void applyCamera(Player player, org.bukkit.Location loc) {
+
         if (SET_CAMERA_METHOD != null) {
+
             try {
+
                 SET_CAMERA_METHOD.invoke(player, loc);
+
                 return; // Success — no need to fallback
+
             } catch (Exception e) {
+
                 // Method invocation failed — will try fallback below
+
             }
+
         }
+
         // Fallback: set eye offset to 0 (player's own camera)
+
         if (SET_EYE_OFFSET_METHOD != null) {
+
             try {
+
                 SET_EYE_OFFSET_METHOD.invoke(player, new org.bukkit.util.Vector(0, 0, 0));
+
             } catch (Exception ignored) {}
+
         }
+
     }
 
+
+
     /**
+
      * 角度插值：使用最短路径（±180° 内），因子固定为 smoothSpeed。
+
      */
+
     private float lerpAngle(float start, float end) {
+
         double smoothSpeed = plugin.getConfig().getDouble("camera.smooth-speed", 0.1);
+
         
+
         // 计算最短角差 (-180 ~ +180)
+
         float diff = end - start;
+
         while (diff > 180.0f) diff -= 360.0f;
+
         while (diff < -180.0f) diff += 360.0f;
+
         
+
         return start + diff * (float) Math.min(Math.max(smoothSpeed, 0.0), 1.0);
+
     }
+
+
 
     public CameraMode getCurrentMode() { 
+
         return currentMode; 
+
     }
 
+
+
     public Location getCameraLocation() {
+
         return cameraLocation;
+
     }
+
 }
