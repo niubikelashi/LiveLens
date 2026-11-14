@@ -5,114 +5,33 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.bionic</groupId>
-    <artifactId>LiveLens</artifactId>
+    <artifactId>bionic-plugins</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>LiveLens</module>
+        <module>CreativeBox</module>
+    </modules>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Paper API supports 1.20+ and is compatible with Leaves (Paper fork) -->
-        <!-- Java 21 required for Paper 1.21+ (class file version 65 vs 61 for Java 17) -->
-        <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
-        <!-- Javacv for H264 encoding — bundles FFmpeg natively -->
-        <javacv.version>1.5.9</javacv.version>
     </properties>
 
     <repositories>
-        <!-- PaperMC public repo — contains paper-api AND all transitive dependencies -->
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <!-- Maven Central as fallback for transitive deps -->
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
     </repositories>
 
-    <dependencies>
-        <!-- paper-api includes all Spigot API + Paper features (setCamera, isInsideBlock) -->
-        <!-- Leaves servers use the same Paper API, so this plugin works on Paper AND Leaves -->
-        <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>${paper.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Javacv for H264 video encoding — bundles FFmpeg libraries -->
-        <!-- This enables server-side screen capture and RTMP streaming to Bilibili/Douyin -->
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacv-platform</artifactId>
-            <version>${javacv.version}</version>
-            <type>pom</type>
-        </dependency>
-        <!-- Explicit compile-scope dep so shade bundles FFmpeg natives -->
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>ffmpeg</artifactId>
-            <version>6.0-1.5.9</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
-
     <build>
-        <!-- Rename the final jar to include plugin name and version -->
-        <finalName>${project.name}-${project.version}</finalName>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                </configuration>
-            </plugin>
-
-            <!-- Shade plugin to bundle Javacv natives into a single runnable jar -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
-                        <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <!-- Keep native library metadata for runtime loading -->
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>with-deps</shadedClassifierName>
-                        </configuration>
-                    </execution>
-                </executions>
+                <version>3.13.0</version>
             </plugin>
         </plugins>
-
-        <!-- Filter plugin.yml to use project version -->
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*.yml</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>**/*.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
     </build>
 </project>
