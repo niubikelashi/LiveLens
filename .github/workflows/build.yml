@@ -1,9 +1,7 @@
-name: Build LiveLens Plugin
+﻿name: Build Plugins
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 permissions:
@@ -17,23 +15,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Set up JDK 21 (required for Paper API 1.21+)
+      - name: Set up JDK 21 (for LiveLens)
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
       
-      - name: Build with Maven
+      - name: Build all modules with Maven
         run: mvn clean package -B
         
-      - name: Upload artifact to Actions Artifacts
-        if: success() && github.ref == 'refs/heads/main'
+      - name: Upload artifacts to Actions Artifacts
         uses: actions/upload-artifact@v4
+        if: success() && github.ref == 'refs/heads/main'
         with:
-          name: LiveLens-plugin
-          path: target/LiveLens-*.jar
-  
+          name: plugin-jars
+          path: |
+            LiveLens/target/*.jar
+            CreativeBox/target/*.jar
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -54,13 +54,16 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          path: .
+          name: plugin-jars
+          path: artifacts
       
       - name: Create Release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v1
         with:
-          tag: v1.0.${{ steps.count.outputs.tag_count }}
-          name: LiveLens v1.0.${{ steps.count.outputs.tag_count }}
-          generateReleaseNotes: true
-          artifacts: "LiveLens-plugin/*.jar"
+          tag_name: v${{ steps.count.outputs.tag_count }}
+          name: Plugin Release ${{ steps.count.outputs.tag_count }}
+          files: |
+            artifacts/LiveLens-*.jar
+            artifacts/CreativeBox-*.jar
+
