@@ -1,47 +1,70 @@
-# LiveLens
+﻿# LiveLens - Minecraft 直播推流插件
 
-A Minecraft plugin that lets you stream your camera view to Twitch, YouTube, or Bilibili.
+![Paper](https://img.shields.io/badge/Paper-1.20%2B-green)
+Leaves Compatible | Java 21 Required
 
-## Features
+LiveLens 是一个功能丰富的 Minecraft 服务器端摄像机系统，支持动态追踪最活跃玩家并实时推流到 Bilibili/Douyin。
 
-- **Live Camera Streaming** — Stream your first-person view directly from the game
-- **Multiple Platforms** — Supports Twitch, YouTube, and custom RTMP endpoints  
-- **FFmpeg Encoding** — Hardware-accelerated video encoding support
-- **Configurable Quality** — Adjust resolution, FPS, and bitrate on the fly
+## 安装步骤
 
-## Installation
+1. **编译**: mvn clean package -DskipTests  
+   JAR: LiveLens/target/LiveLens-1.0-SNAPSHOT-with-deps.jar
+2. **部署**: 放入服务器 plugins/ 目录
+3. **配置**: 编辑 plugins/LiveLens/config.yml
 
-1. Download the latest release JAR from [Releases](https://github.com/niubikelashi/LiveLens/releases)
-2. Place it in your server's `plugins/` directory
-3. Restart or reload your server
-4. Configure in `plugins/LiveLens/config.yml`
+## 命令列表
 
-## Commands
+| 命令 | 权限 | 描述 |
+|------|------|------|
+| /livelens god | livelens.use | 上帝视角 |
+| /livelens first | livelens.use | 第一人称跟随 |
+| /livelens orbit | livelens.use | 轨道环绕 |
+| /livelens switch | livelens.use | 循环切换模式 |
+| /livelens status | livelens.use | 查看摄像机状态 |
 
-| Command | Description | Permission |
-|---------|-------------|------------|
-| `/livelens start` | Start streaming | `livelens.use` |
-| `/livelens stop` | Stop streaming | `livelens.use` |
-| `/livelens status` | Check stream status | `livelens.use` |
+## RTMP 推流设置
 
-## Configuration
+### Bilibili 密钥获取 (1) live.bilibili.com -> 创作服务中心 -> 开始直播 -> OBS/第三方软件
+复制 RTMP URL + 推流密钥。
 
-Edit `plugins/LiveLens/config.yml`:
-
-```yaml
+`yaml
 stream:
-  rtmp-url: "rtmp://live.bilibili.com/..."
-  video-quality: high
-  resolution: "1920x1080"
-  fps: 30
-```
+  provider: bilibili
+  stream-key: "你的B站密钥"
+`
 
-## Building from Source
+### Douyin 密钥获取 (2) creator.douyin.com -> 开播 -> 第三方推流软件
+复制地址和密钥。
 
-Requires Java 21+ and Maven:
+`yaml
+stream:
+  provider: douyin  
+  stream-key: "你的抖音密钥"
+`
 
-```bash
-mvn clean package -DskipTests
-```
+### 自定义 RTMP (3)
+`yaml
+stream:
+  provider: custom
+  custom-rtmp-url: "rtmp://server/live/\"
+  stream-key: "my_stream"
+`
 
-The compiled JAR will be in `LiveLens/target/`.
+## 关键配置参数
+
+| 路径 | 默认值 | 说明 |
+|------|--------|------|
+| camera.god-view.height | 15.0 | 上帝视角高度 |
+| camera.smooth-speed | 0.1 | 平滑速度 (0~1) |
+| stream.fps | 30 | 推流帧率 |
+| stream.capture-interval-ticks | 2 | 采样间隔(2=15fps, 1=30fps) |
+| stream.max-duration-minutes | 60 | 最大直播时长(0=不限制) |
+
+## 权限节点
+
+- livelens.use (default: true) - 基本命令
+- livestream.start (default: op) - 推流控制
+
+## 兼容性
+
+Paper/Spigot 1.20+ / Leaves (Java 21, Javacv内置shaded)
