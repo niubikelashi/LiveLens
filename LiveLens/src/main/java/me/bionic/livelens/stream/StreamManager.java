@@ -123,10 +123,12 @@ public class StreamManager {
                             encoder.captureFrame(frameData, captureTickInterval);
                         }
                     } else {
+                        // FIX: No camera location yet — sleep briefly to avoid tight loop
                         Thread.sleep(50L);
                     }
-                } catch (InterruptedException e) { break; }
-                catch (Exception e) {
+                } catch (InterruptedException e) { 
+                    break; 
+                } catch (Exception e) {
                     plugin.getLogger().warning("Stream capture error: " + e.getMessage());
                     try { Thread.sleep(100L); } catch (InterruptedException ie) { break; }
                 }
