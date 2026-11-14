@@ -1,4 +1,4 @@
-﻿package com.bionic.creativebox.listener;
+package com.bionic.creativebox.listener;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
