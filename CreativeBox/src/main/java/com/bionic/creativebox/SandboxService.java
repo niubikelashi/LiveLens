@@ -98,7 +98,7 @@ public class SandboxService {
         FileConfiguration config = plugin.getConfig();
         String prefix = config.getString("messages.prefix", "&8[&b沙盒&8] ");
         String msg = config.getString("messages.enter", "&a已进入创意沙盒世界");
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + msg);
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + msg));
 
         plugin.getLogger().info("Player " + player.getName() + " entered sandbox.");
     }
