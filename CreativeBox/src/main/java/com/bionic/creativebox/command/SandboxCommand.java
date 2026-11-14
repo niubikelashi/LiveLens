@@ -1,4 +1,4 @@
-﻿package com.bionic.creativebox.command;
+package com.bionic.creativebox.command;
 
 import org.bukkit.*;
 import org.bukkit.command.Command;
