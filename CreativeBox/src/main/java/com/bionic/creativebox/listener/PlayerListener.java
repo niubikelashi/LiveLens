@@ -1,4 +1,4 @@
-﻿package com.bionic.creativebox.listener;
+package com.bionic.creativebox.listener;
 
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
@@ -27,7 +27,7 @@ public class PlayerListener implements Listener {
     }
 
     /** 玩家上次移动时间戳（tick），用于节流虚空检测（坑 #10） */
-    private final java.util.Map<java.util.UUID, Long> lastVoidCheckTime = new java.util.concurrent.ConcurrentHashMap<>()();
+    private final java.util.Map<java.util.UUID, Long> lastVoidCheckTime = new java.util.concurrent.ConcurrentHashMap<>();
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
