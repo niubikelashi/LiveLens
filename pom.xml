@@ -35,7 +35,7 @@
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
             <version>${javacv.version}</version>
-            <type>pom</type>
+            <classifier>with-deps</classifier>
             <scope>compile</scope>
         </dependency>
     </dependencies>
