@@ -68,3 +68,6 @@ stream:
 ## 兼容性
 
 Paper/Spigot 1.20+ / Leaves (Java 21, Javacv内置shaded)
+
+
+<!-- CI test -->
