@@ -50,11 +50,13 @@ jobs:
           name: LiveLens-jar
           path: artifacts
         
-      - name: Count existing releases
+      - name: Count existing releases and set tag
         id: count
         run: |
           TAG_COUNT=$(gh release list --limit 1000 2>/dev/null | wc -l)
-          echo "tag_count=$TAG_COUNT" >> $GITHUB_OUTPUT
+          NEXT=$((TAG_COUNT + 1))
+          echo "tag=v${NEXT}" >> $GITHUB_OUTPUT
+          echo "name=LiveLens v${NEXT}" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
       
@@ -62,6 +64,6 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.count.outputs.tag_count + 1 }}
-          name: LiveLens v${{ steps.count.outputs.tag_count + 1 }}
+          tag_name: ${{ steps.count.outputs.tag }}
+          name: ${{ steps.count.outputs.name }}
           files: artifacts/LiveLens-*.jar
