@@ -64,3 +64,5 @@ jobs:
           tag_name: v${{ steps.count.outputs.tag_count + 1 }}
           name: LiveLens v${{ steps.count.outputs.tag_count + 1 }}
           files: artifacts/LiveLens-*.jar
+
+# updated
