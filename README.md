@@ -73,3 +73,4 @@ Paper/Spigot 1.20+ / Leaves (Java 21, Javacv内置shaded)
 <!-- CI test -->
 
 <!-- CI test -->
+<!-- CI test 2 -->
