@@ -1,10 +1,11 @@
 name: Build LiveLens
 
-on:
+'on':
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -64,5 +65,3 @@ jobs:
           tag_name: v${{ steps.count.outputs.tag_count + 1 }}
           name: LiveLens v${{ steps.count.outputs.tag_count + 1 }}
           files: artifacts/LiveLens-*.jar
-
-# updated
