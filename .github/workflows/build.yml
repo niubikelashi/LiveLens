@@ -1,4 +1,4 @@
-﻿name: Build LiveLens
+name: Build LiveLens
 
 on:
   push:
@@ -26,14 +26,13 @@ jobs:
           
       - name: Build with Maven
         run: mvn clean package -B
-        working-directory: LiveLens
         
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         if: success() && github.ref == 'refs/heads/main'
         with:
           name: LiveLens-jar
-          path: LiveLens/target/LiveLens-*.jar
+          path: target/LiveLens-*.jar
 
   release:
     needs: build
