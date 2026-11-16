@@ -61,9 +61,8 @@ public class SandboxService {
 
         // 6. 清空背包和末影箱（内容已存盘）
         player.getInventory().clear();
-        player.getEnderChest().getContents(new ItemStack[0]);
-        // 正确清空末影箱：用 setContents(null array)
-        player.getEnderChest().getInventory().setContents(new ItemStack[27]);
+        // 清空末影箱
+        player.getEnderChest().getInventory().setContents(new ItemStack[0]);
 
         // 7. 清空所有药水效果
         for (org.bukkit.potion.PotionEffect pe : player.getActivePotionEffects()) {
