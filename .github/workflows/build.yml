@@ -1,4 +1,4 @@
-name: Build LiveLens
+name: Build Plugins
 
 'on':
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-livelens:
     runs-on: ubuntu-latest
     
     steps:
@@ -24,30 +24,53 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-          
-      - name: Build with Maven
+      
+      - name: Build LiveLens with Maven
+        working-directory: ./LiveLens
         run: mvn clean package -B
         
-      - name: Upload artifact
+      - name: Upload LiveLens artifact
         uses: actions/upload-artifact@v4
         if: success() && github.ref == 'refs/heads/main'
         with:
-          name: LiveLens-jar
-          path: target/LiveLens-*.jar
+          name: livelens-jar
+          path: LiveLens/target/LiveLens-*.jar
 
-  release:
-    needs: build
+  build-creativebox:
     runs-on: ubuntu-latest
-    if: success() && github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Build CreativeBox with Maven
+        working-directory: ./CreativeBox
+        run: mvn clean package -B
+        
+      - name: Upload CreativeBox artifact
+        uses: actions/upload-artifact@v4
+        if: success() && github.ref == 'refs/heads/main'
+        with:
+          name: creativebox-jar
+          path: CreativeBox/target/CreativeBox-*.jar
+
+  release-livelens:
+    needs: build-livelens
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+    
+    steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: LiveLens-jar
+          name: livelens-jar
           path: artifacts
         
       - name: Count existing releases and set tag
@@ -67,3 +90,33 @@ jobs:
           tag_name: ${{ steps.count.outputs.tag }}
           name: ${{ steps.count.outputs.name }}
           files: artifacts/LiveLens-*.jar
+
+  release-creativebox:
+    needs: build-creativebox
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: creativebox-jar
+          path: artifacts
+        
+      - name: Count existing releases and set tag
+        id: count
+        run: |
+          TAG_COUNT=$(gh release list --limit 1000 --json name | grep -c '"name"')
+          NEXT=$((TAG_COUNT + 1))
+          echo "tag=v${NEXT}" >> $GITHUB_OUTPUT
+          echo "name=CreativeBox v${NEXT}" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: cb-${{ steps.count.outputs.tag }}
+          name: CreativeBox v${{ steps.count.outputs.tag }}
+          files: artifacts/CreativeBox-*.jar
