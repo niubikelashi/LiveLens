@@ -34,7 +34,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.name}-${project.version}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <!-- No shade plugin — zero third-party dependencies -->
         <resources>
             <resource>
