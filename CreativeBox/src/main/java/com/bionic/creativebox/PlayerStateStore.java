@@ -3,7 +3,7 @@ package com.bionic.creativebox;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
-import org.yaml.snakeyaml.external.biz.base64coder.Base64Coder;
+
 
 import java.io.*;
 import java.nio.file.*;
@@ -191,7 +191,7 @@ public class PlayerStateStore {
             if (items == null) return "null";
             data.writeInt(items.length);
             for (ItemStack item : items) data.writeObject(item);
-            return Base64Coder.encodeLines(out.toByteArray());
+            return java.util.Base64.getEncoder().encodeToString(out.toByteArray());
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to serialize items: " + e.getMessage());
             return "null";
@@ -202,7 +202,7 @@ public class PlayerStateStore {
     public ItemStack[] deserializeItemsFromBase64(String b64) {
         if (b64 == null || b64.equals("null") || b64.isEmpty()) return new ItemStack[0];
         try {
-            byte[] decoded = Base64Coder.decodeLines(b64);
+            byte[] decoded = java.util.Base64.getDecoder().decode(b64);
             ByteArrayInputStream in = new ByteArrayInputStream(decoded);
             try (BukkitObjectInputStream data = new BukkitObjectInputStream(in)) {
                 int length = Math.max(0, data.readInt());
